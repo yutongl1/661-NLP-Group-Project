@@ -26,7 +26,8 @@ st_parser = StanfordParser(model_path = eng_model_path, path_to_models_jar=stanf
 
 
 stanford_ner = 'stanford/stanford-ner-2015-04-20/'
-stanford_ner_model = stanford_ner + 'classifiers/english.all.3class.distsim.crf.ser.gz'
+# stanford_ner_model = stanford_ner + 'classifiers/english.all.3class.distsim.crf.ser.gz'
+stanford_ner_model = stanford_ner + 'classifiers/english.muc.7class.distsim.crf.ser.gz'
 stanford_ner_jar = stanford_ner + 'stanford-ner.jar'
 st_ner = StanfordNERTagger(model_filename=stanford_ner_model, path_to_jar=stanford_ner_jar)
 
@@ -132,11 +133,11 @@ def parse_sentence(sentence):
 					if VB.label() == "VBD":
 						print "Did " + ' '.join(S[0][0].leaves()) + ' ' + lmtzr.lemmatize(VB.leaves()[0],'v') + ' ' + ' '.join(S[0][1][1].leaves()) + '?'
 
-            # Where 
+            # Where and When
 			words = S[0].leaves()
 			tags =  map(lambda x: x[1], st_ner.tag(words))
 			tagDict = Counter(tags) 
-
+			# Where
 			if "LOCATION" in tagDict:
 				print "============= Location =============="
 				q_loc = ["Where"]
@@ -150,7 +151,19 @@ def parse_sentence(sentence):
 							q_loc.append(words[i])
 				print ' '.join(q_loc) + "?"
 
-	# TO DO: Work on wh-non-subject (PP phrases) ["When"]
+			# When
+			if "DATE" in tagDict:
+				print "============= Time =============="
+				q_loc = ["When"]
+				for i in range(len(words) - 1):
+					if tags[i] == "DATE" or tags[i + 1] == "DATE":
+						pass
+					else:	
+						if i == 0 and (not tags[i] == "PERSON") and (not tags[i] == "ORGANIZATION"):
+							q_loc.append(words[i].lower())
+						else:
+							q_loc.append(words[i])
+				print ' '.join(q_loc) + "?"
 
 def main():
 	sentence_word = sentenceCandidate(sys.argv[1])
