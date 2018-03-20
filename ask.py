@@ -10,6 +10,7 @@ from nltk.parse.stanford import StanfordDependencyParser
 from nltk.parse.stanford import StanfordNeuralDependencyParser
 from nltk.tag.stanford import StanfordPOSTagger, StanfordNERTagger
 from nltk.tokenize.stanford import StanfordTokenizer
+from nltk.stem.wordnet import WordNetLemmatizer
 import string
 from collections import Counter
 
@@ -30,6 +31,10 @@ stanford_ner_jar = stanford_ner + 'stanford-ner.jar'
 st_ner = StanfordNERTagger(model_filename=stanford_ner_model, path_to_jar=stanford_ner_jar)
 
 punctuation = ['\\','/', ';','@', '?', '^','~', '`', '|']
+lmtzr = WordNetLemmatizer()
+
+
+
 
 # Return [[w01,...,wn1],[w02,...,wn2],...]
 def sentenceCandidate(file):
@@ -81,8 +86,7 @@ def parse_sentence(sentence):
 	#print sentence
 
 	for S in parser_result: 
-
-		# Work on wh-subject sentences. ["Who", "Which Organization"]
+		# Work on wh-subject sentences. ["Who", "Which Organization", "Yes No", "Where"]
 		if S[0][0].label() == 'NP' and S[0][1].label() == 'VP':
 			subject_words = S[0][0].leaves()
 			
@@ -93,15 +97,13 @@ def parse_sentence(sentence):
 				# TO DO: Majority Vote
 				print "=============== Tell Me =========="
 				print sentence
-				print NP_ner_tag
 
-			if "PERSON" in NP_ner_tag :
+			if "PERSON" in NP_ner_tag:
 				print "============= Person =============="
 				print "Who " + ' '.join(S[0][1].leaves()) + "?"
 				#print S
 
-
-			elif  "ORGANIZATION" in NP_ner_tag:
+			elif "ORGANIZATION" in NP_ner_tag:
 				# TO DO: Need to figure out plural or singular
 				print "============== organization ============="
 				print "Which organization " + ' '.join(S[0][1].leaves()) + "?"
@@ -110,21 +112,55 @@ def parse_sentence(sentence):
 			elif "O" in NP_ner_tag and len(NP_ner_tag) == 1:
 				print "============== what? ============="
 				print "What " + ' '.join(S[0][1].leaves()) + "?"
-				#print S				
+				# print S				
 				
 			# Yes No Question
+			be = ['is', 'are', 'was', 'were']
+			VB = S[0][1][0]
+			if len(VB.leaves()) == 1:
+				if VB.leaves()[0] in be:
+					# Capitalize the BE word + The first NP Phrase (Subject) + Everything after the Be word. 
+					print VB.leaves()[0].capitalize() + ' ' + ' '.join(S[0][0].leaves()) + ' ' +  ' '.join(S[0][1][1].leaves()) + '?'
+				else:
+					# Do 
+					if VB.label() == "VBP":
+						print "Do " + ' '.join(S[0][0].leaves()) + ' ' +  lmtzr.lemmatize(VB.leaves()[0],'v') + ' ' + ' '.join(S[0][1][1].leaves()) + '?'
+					# Does
+					if VB.label() == "VBZ":
+						print "Does " + ' '.join(S[0][0].leaves()) + ' ' + lmtzr.lemmatize(VB.leaves()[0],'v') + ' ' + ' '.join(S[0][1][1].leaves()) + '?'
+					# Did
+					if VB.label() == "VBD":
+						print "Did " + ' '.join(S[0][0].leaves()) + ' ' + lmtzr.lemmatize(VB.leaves()[0],'v') + ' ' + ' '.join(S[0][1][1].leaves()) + '?'
 
+            # Where 
+			words = S[0].leaves()
+			tags =  map(lambda x: x[1], st_ner.tag(words))
+			tagDict = Counter(tags) 
 
-		# TO DO: Work on wh-non-subject (PP phrases) ["When", "Where"]
+			if "LOCATION" in tagDict:
+				print "============= Location =============="
+				q_loc = ["Where"]
+				for i in range(len(words) - 1):
+					if tags[i] == "LOCATION" or tags[i + 1] == "LOCATION":
+						pass
+					else:	
+						if i == 0 and (not tags[i] == "PERSON") and (not tags[i] == "ORGANIZATION"):
+							q_loc.append(words[i].lower())
+						else:
+							q_loc.append(words[i])
+				print ' '.join(q_loc) + "?"
 
-
+	# TO DO: Work on wh-non-subject (PP phrases) ["When"]
 
 def main():
-
 	sentence_word = sentenceCandidate(sys.argv[1])
 	
+	# TO DO: Tree Traversal (e.g. S[0][1][1]), needs try except
 	for sent in sentence_word:
-		parseTree = parse_sentence(sent)
+		try: 
+			parseTree = parse_sentence(sent)
+		except:
+			pass
 	
 		
 		#if parseTree != None:
