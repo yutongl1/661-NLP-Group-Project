@@ -152,11 +152,11 @@ def parse_sentence(sentence):
 				print ' '.join(q_loc) + "?"
 
 			# When
-			if "DATE" in tagDict:
+			if "DATE" in tagDict or "TIME" in tagDict:
 				print "============= Time =============="
 				q_loc = ["When"]
 				for i in range(len(words) - 1):
-					if tags[i] == "DATE" or tags[i + 1] == "DATE":
+					if tags[i] == "DATE" or tags[i] == "TIME" or tags[i + 1] == "DATE" or tags[i + 1] == "TIME":
 						pass
 					else:	
 						if i == 0 and (not tags[i] == "PERSON") and (not tags[i] == "ORGANIZATION"):
