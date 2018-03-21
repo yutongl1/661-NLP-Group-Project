@@ -134,36 +134,89 @@ def parse_sentence(sentence):
 						print "Did " + ' '.join(S[0][0].leaves()) + ' ' + lmtzr.lemmatize(VB.leaves()[0],'v') + ' ' + ' '.join(S[0][1][1].leaves()) + '?'
 
             # Where and When
+            # be = ['is', 'are', 'was', 'were']
+            # VB = S[0][1][0]
 			words = S[0].leaves()
 			tags =  map(lambda x: x[1], st_ner.tag(words))
 			tagDict = Counter(tags) 
 			# Where
 			if "LOCATION" in tagDict:
-				print "============= Location =============="
-				q_loc = ["Where"]
-				for i in range(len(words) - 1):
-					if tags[i] == "LOCATION" or tags[i + 1] == "LOCATION":
-						pass
-					else:	
-						if i == 0 and (not tags[i] == "PERSON") and (not tags[i] == "ORGANIZATION"):
-							q_loc.append(words[i].lower())
-						else:
-							q_loc.append(words[i])
-				print ' '.join(q_loc) + "?"
+				if len(VB.leaves()) == 1:
+					q_loc = ["Where"]
+					if VB.leaves()[0] in be:
+						q_loc.append(VB.leaves()[0])
+						for i in range(len(words) - 1):
+							if words[i] == VB.leaves()[0] or tags[i] == "LOCATION" or tags[i + 1] == "LOCATION":
+								pass
+							else:
+								if i == 0 and (not tags[i] == "PERSON") and (not tags[i] == "ORGANIZATION"):
+									q_loc.append(words[i].lower())
+								else:
+									q_loc.append(words[i])
+						print "============= Location =============="
+						print ' '.join(q_loc) + "?"
+					else:
+						# Do 
+						if VB.label() == "VBP":
+							q_loc.append("do")
+						# Does
+						if VB.label() == "VBZ":
+							q_loc.append("does")
+						# Did
+						if VB.label() == "VBD":
+							q_loc.append("did")
 
+						for i in range(len(words) - 1):
+							if tags[i] == "LOCATION" or tags[i + 1] == "LOCATION":
+								pass
+							elif words[i] == VB.leaves()[0]:
+								q_loc.append(lmtzr.lemmatize(VB.leaves()[0],'v'))
+							else:
+								if i == 0 and (not tags[i] == "PERSON") and (not tags[i] == "ORGANIZATION"):
+									q_loc.append(words[i].lower())
+								else:
+									q_loc.append(words[i])
+						print "============= Location =============="
+						print ' '.join(q_loc) + "?"
 			# When
 			if "DATE" in tagDict or "TIME" in tagDict:
-				print "============= Time =============="
-				q_loc = ["When"]
-				for i in range(len(words) - 1):
-					if tags[i] == "DATE" or tags[i] == "TIME" or tags[i + 1] == "DATE" or tags[i + 1] == "TIME":
-						pass
-					else:	
-						if i == 0 and (not tags[i] == "PERSON") and (not tags[i] == "ORGANIZATION"):
-							q_loc.append(words[i].lower())
-						else:
-							q_loc.append(words[i])
-				print ' '.join(q_loc) + "?"
+				if len(VB.leaves()) == 1:
+					q_loc = ["When"]
+					if VB.leaves()[0] in be:
+						q_loc.append(VB.leaves()[0])
+						for i in range(len(words) - 1):
+							if words[i] == VB.leaves()[0] or tags[i] == "DATE" or tags[i] == "TIME" or tags[i + 1] == "DATE" or tags[i + 1] == "TIME":
+								pass
+							else:
+								if i == 0 and (not tags[i] == "PERSON") and (not tags[i] == "ORGANIZATION"):
+									q_loc.append(words[i].lower())
+								else:
+									q_loc.append(words[i])
+						print "============= Time =============="
+						print ' '.join(q_loc) + "?"
+					else:
+						# Do 
+						if VB.label() == "VBP":
+							q_loc.append("do")
+						# Does
+						if VB.label() == "VBZ":
+							q_loc.append("does")
+						# Did
+						if VB.label() == "VBD":
+							q_loc.append("did")
+
+						for i in range(len(words) - 1):
+							if tags[i] == "DATE" or tags[i] == "TIME" or tags[i + 1] == "DATE" or tags[i + 1] == "TIME":
+								pass
+							elif words[i] == VB.leaves()[0]:
+								q_loc.append(lmtzr.lemmatize(VB.leaves()[0],'v'))
+							else:
+								if i == 0 and (not tags[i] == "PERSON") and (not tags[i] == "ORGANIZATION"):
+									q_loc.append(words[i].lower())
+								else:
+									q_loc.append(words[i])
+						print "============= Time =============="
+						print ' '.join(q_loc) + "?"
 
 def main():
 	sentence_word = sentenceCandidate(sys.argv[1])
@@ -175,7 +228,6 @@ def main():
 		except:
 			pass
 	
-		
 		#if parseTree != None:
 			 
 
