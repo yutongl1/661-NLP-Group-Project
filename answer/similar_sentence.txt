@@ -1,0 +1,185 @@
+1
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+2
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+3
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+4
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+5
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+6
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+7
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+8
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+9
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+10
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+11
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+12
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+13
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+14
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+15
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+16
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+17
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+18
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+19
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+20
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+21
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+22
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+23
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+24
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+25
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+26
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+27
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+28
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+29
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+30
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+31
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+32
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+33
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+34
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+35
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+36
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
+37
+[['A', 'kangaroo', 'is', 'a', 'marsupial', 'from', 'the', 'family', 'Macropodidae', '(', 'macropods', ',', 'meaning', "'large", 'foot', "'", ')', '.']]
+
+A kangaroo is a marsupial from the family Macropodidae ( macropods , meaning 'large foot ' ) .
+
