@@ -86,7 +86,7 @@ def main():
 
 
 	# # NER Tagging:
-	stanford_ner = '/Users/yuyanzhang/Desktop/CMU/NLP/project/tools/stanford-ner-2015-04-20/'
+	stanford_ner = '/Users/wen/Education/2018-Spring-CMU/NLP/661-NLP-Group-Project-master/stanford/stanford-ner-2015-04-20/'
 	# stanford_ner_model = stanford_ner + 'classifiers/english.all.3class.distsim.crf.ser.gz'
 	stanford_ner_model = stanford_ner + 'classifiers/english.muc.7class.distsim.crf.ser.gz'
 	stanford_ner_jar = stanford_ner + 'stanford-ner.jar'
@@ -94,7 +94,7 @@ def main():
 	#print(ner.tag('Rami Eid is studying at Stony Brook University in NY'.split()))
 
 	# Set up the stanford PCFG parser
-	stanford_parser_dir = '/Users/yuyanzhang/Desktop/CMU/NLP/project/tools/stanford-parser-full-2015-04-20/'
+	stanford_parser_dir = '/Users/wen/Education/2018-Spring-CMU/NLP/661-NLP-Group-Project-master/stanford/stanford-parser-full-2015-04-20/'
 	eng_model_path = stanford_parser_dir  + "stanford-parser-3.5.2-models/edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz"
 	my_path_to_models_jar = stanford_parser_dir  + "stanford-parser-3.5.2-models.jar"
 	my_path_to_jar = stanford_parser_dir  + "stanford-parser.jar"
@@ -139,10 +139,10 @@ def main():
 	# 		sentences_pool_lemmatized.append(sentences_lemmatized)
 	# 		writer.writerow(sentences_lemmatized)
 	
-	with open('sentences_pool_lemmatized.csv') as f:
-		for line in f:
-			line = [a.lower() for a in line.strip().split("\t")]
-			sentences_pool_lemmatized.append(line)
+	# with open('sentences_pool_lemmatized.csv') as f:
+	# 	for line in f:
+	# 		line = [a.lower() for a in line.strip().split("\t")]
+	# 		sentences_pool_lemmatized.append(line)
 
 	with open(question_list) as f:
 		#	For each question on the list
@@ -163,21 +163,21 @@ def main():
 			question_content = [a for a in question_tokenized_lower if a not in filtered_list]
 
 			#	Lemmatize the question
-			question_lemmatized = [lemmatizer.lemmatize(i,j[0].lower()) if j[0].lower() in ['a','n','v'] else lemmatizer.lemmatize(i) for i,j in pos_tag(question_content)]
+			#question_lemmatized = [lemmatizer.lemmatize(i,j[0].lower()) if j[0].lower() in ['a','n','v'] else lemmatizer.lemmatize(i) for i,j in pos_tag(question_content)]
 			
 			
 			#	Find the most similar sentences in the pool 
 			max_similarity = None
 			most_similar_sent = [] #	We need to consider ties
 
-			for sent_idx in range(len(sentences_pool_lemmatized)):
-				sent = sentences_pool_lemmatized[sent_idx]
+			for sent_idx in range(len(sentence_pool)):
+				sent = sentence_pool[sent_idx]
 				
 				#similarity_score = jaccard_similarity(sent,question_content)+similarity(sent,question_content)
 				if question_start == 'why':
-					similarity_score = similarity_why(sent,question_lemmatized)
+					similarity_score = similarity_why(sent,question_content)
 				else:
-					similarity_score = similarity(sent,question_lemmatized, 0.8)
+					similarity_score = similarity(sent,question_content, 0.8)
 				
 				if max_similarity == None:
 					max_similarity = similarity_score
@@ -201,6 +201,7 @@ def main():
 			#	Find the most relevant sentence
 			max_similarity_2 = None
 			max_similar_sent = None
+
 			for sent in most_similar_sent:
 				sent_filtered = [a for a in sent if not a in same_word]
 				similarity_socre_2 = similarity(sent_filtered,question_content, 1)
@@ -210,7 +211,8 @@ def main():
 				elif similarity_socre_2 > max_similarity_2:
 					max_similarity_2 = similarity_socre_2
 					max_similar_sent = sent
-			
+			print(question)
+			print(max_similar_sent)
 			#	Build answer based on different type of question
 			answer = "NULL"
 
@@ -222,6 +224,8 @@ def main():
 					answer = "No"
 				else:
 					question_parse = parser.parse(question_tokenized)
+					print "--Q:", question_tokenized
+					# max_similar_parse = parser.parse(max_similar_sent)
 					for parse in question_parse:
 						# print(parse)
 						verb = parse[0][0].leaves()
@@ -229,11 +233,45 @@ def main():
 						obj = (parse[0][2].leaves())
 						#substring = " ".join((sub+verb+obj))
 						# If yes, most of the words in objects should be in the original sentence
+						verb = [a.lower() for a in verb]
 						obj = [a.lower() for a in obj]
-						if float(len(intersection(obj,max_similar_sent))) / len(obj)  >= 0.8:
-							answer = "Yes"
-						else:
-							answer = "No"
+
+						print verb, sub, obj
+						print "--A:", max_similar_sent
+						max_similar_parse = parser.parse(max_similar_sent)
+						for mparse in max_similar_parse:
+							# print(parse)
+							try: 
+								averb = mparse[0][1][0].leaves()
+								averb = [a.lower() for a in averb]
+								print averb
+							except:
+								answer = "no"
+								break
+							# asub = (mparse[0][1].leaves())
+							aobj = (mparse[0][2].leaves())
+							aobj = [a.lower() for a in aobj]
+							# averb = [a.lower() for a in averb]
+							# print averb, asub, aobj
+
+							if verb == averb and aobj[0] != 'not':
+								answer = "yes"
+							else:
+								# Handle: is - isn't and is - is not and not relavant
+								answer = "no"
+					# question_parse = parser.parse(question_tokenized)
+					# for parse in question_parse:
+					# 	# print(parse)
+					# 	verb = parse[0][0].leaves()
+					# 	sub = (parse[0][1].leaves())
+					# 	obj = (parse[0][2].leaves())
+					# 	#substring = " ".join((sub+verb+obj))
+					# 	# If yes, most of the words in objects should be in the original sentence
+					# 	obj = [a.lower() for a in obj]
+					# 	if float(len(intersection(obj,max_similar_sent))) / len(obj)  >= 0.8:
+					# 		answer = "Yes"
+					# 	else:
+					# 		answer = "No"
 						
 					#	TODO: parse candidate sentence
 					# answer = "No"
@@ -266,7 +304,19 @@ def main():
 						found_DATE = True
 				if not found_DATE:
 					#TODO: deal with this situation
-					pass
+					timeFlag = ["year", "month", "day", "hour", "minute", 'second'] #And more
+					if "during" in max_similar_sent:
+						duringIndex = max_similar_sent.index("during")
+						answer = []
+						for i in max_similar_sent[duringIndex:]:
+							answer.append(i)
+							if lemmatizer.lemmatize(i) in timeFlag:
+								answer.append(i)
+								break
+						if i == len(max_similar_sent[duringIndex:]):
+							answer = []
+					#TODO: other situations
+			
 			
 			elif question_start == 'who':
 				max_similar_sent_tag = ner.tag(max_similar_sent)
@@ -277,7 +327,13 @@ def main():
 						found_PERSON = True
 				if not found_PERSON:
 					#TODO: deal with this situation
-					pass
+					max_similar_parse = parser.parse(max_similar_sent)
+					for mparse in max_similar_parse:
+						# print(parse)
+						asub = (mparse[0][1].leaves())
+						answer = [a.lower() for a in asub]
+						#TODO: other situations
+
 
 			elif question_start == 'where':
 				found_LOCATION = False
