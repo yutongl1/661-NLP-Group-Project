@@ -50,7 +50,7 @@ def similarity(sent,question_content, percentage):
     return    score 
 
 
-#    Customized similarity measure for why type of question
+#    Customized similarity measure for why      of question
 def similarity_why(sent,question_content):
     a = set(sent)
     b = set(question_content)
@@ -76,6 +76,27 @@ def intersection(lst1, lst2):
 
 def generate_bigram(tokens):
     return zip(tokens, tokens[1:])
+
+# cur: currect tree
+# label: target label
+# record: candidates
+def searchLabel(cur, label, record):
+    answer = None
+    if cur.label() == label:
+        # record.append(cur.leaves())
+        record.append(cur)
+    for i in cur:
+        # print "--",    (i), isinstance(i, (str, unicode)), i
+        if not isinstance(i, (str, unicode)) and i.label() == label:
+            # record.append(i.leaves())
+            record.append(i)
+        else:
+            if len(i):
+                if isinstance(i[0], (str, unicode)):
+                    continue
+                else:
+                    for j in i:
+                        searchLabel(j, label, record)
 
 def main():
     # stanford_pos_dir = '/Users/yuyanzhang/Desktop/CMU/NLP/project/tools/stanford-postagger-full-2015-04-20/'
@@ -153,9 +174,14 @@ def main():
             question_start = question_tokenized_lower[0]
 
 
-            if question_start in ['when','where','why','which','who','how','do','does','did']:
-                continue    
+            # if question_start in ['when','where','why','which','who','how','do','does','did']:
+            #     continue    
             
+            # Control the type of question 
+            if question_start in ['when']:
+                pass
+            else:
+                continue    
             
             #    Seperate question words and question content
             # filtered_list = [a for a in string.punctuation]
@@ -211,9 +237,9 @@ def main():
                 elif similarity_socre_2 > max_similarity_2:
                     max_similarity_2 = similarity_socre_2
                     max_similar_sent = sent
-            print(question)
-            print(max_similar_sent)
-            #    Build answer based on different type of question
+            # print(question)
+            # print(max_similar_sent)
+            #    Build answer based on different      of question
             answer = "NULL"
 
             #    Yes/No question: answer should contain only yes or no.    
@@ -259,27 +285,6 @@ def main():
                             else:
                                 # Handle: is - isn't and is - is not and not relavant
                                 answer = "no"
-                    # question_parse = parser.parse(question_tokenized)
-                    # for parse in question_parse:
-                    #     # print(parse)
-                    #     verb = parse[0][0].leaves()
-                    #     sub = (parse[0][1].leaves())
-                    #     obj = (parse[0][2].leaves())
-                    #     #substring = " ".join((sub+verb+obj))
-                    #     # If yes, most of the words in objects should be in the original sentence
-                    #     obj = [a.lower() for a in obj]
-                    #     if float(len(intersection(obj,max_similar_sent))) / len(obj)  >= 0.8:
-                    #         answer = "Yes"
-                    #     else:
-                    #         answer = "No"
-                        
-                    #    TODO: parse candidate sentence
-                    # answer = "No"
-                    # similar_sent_parse = parser.parse(max_similar_sent)
-                    # for parse in similar_sent_parse:
-                    #     verb_ = parse[0][0].leaves()
-                    #     sub_ = (parse[0][2].leaves())
-                    #     obj_ = (parse[0][1].leaves())
                     
             elif question_start == 'why':
                 max_similar_sent_str = " ".join(max_similar_sent)
@@ -296,27 +301,37 @@ def main():
 
 
             elif question_start == 'when':
+                # 1. Tag: 'DATE', 'TIME'
+                # 2.1. one PP or one CD in PP, return it
+                # 2.2. multi candidate, return max_similar_sent
                 found_DATE = False
                 max_similar_sent_tag = ner.tag(max_similar_sent)
+                print max_similar_sent_tag 
+                Uncomment for dry run
                 for pair in max_similar_sent_tag:
                     if pair[1] == 'DATE' or pair[1] == 'TIME':
                         answer = pair[0]
                         found_DATE = True
                 if not found_DATE:
                     #TODO: deal with this situation
-                    timeFlag = ["year", "month", "day", "hour", "minute", 'second'] #And more
-                    if "during" in max_similar_sent:
-                        duringIndex = max_similar_sent.index("during")
-                        answer = []
-                        for i in max_similar_sent[duringIndex:]:
-                            answer.append(i)
-                            if lemmatizer.lemmatize(i) in timeFlag:
-                                answer.append(i)
-                                break
-                        if i == len(max_similar_sent[duringIndex:]):
-                            answer = []
-                    #TODO: other situations
-            
+                    max_similar_parse = parser.parse(max_similar_sent)
+                    for mparse in max_similar_parse:
+                        print mparse
+                        stack = mparse
+                        answer = max_similar_parse
+                        record1 = []                            
+                        record2 = []
+                        for i in stack:
+                            searchLabel(i, "PP", record1)
+                            # print "-------", record1
+                        if len(record1) == 1:
+                            answer = record1[0].leaves()     
+                        else:
+                            for j in record1:
+                                searchLabel(j, "CD", record2)
+                            if len(record2) == 1:
+                                answer = record2[0].leaves()
+
             
             elif question_start == 'who':
                 max_similar_sent_tag = ner.tag(max_similar_sent)
@@ -343,25 +358,41 @@ def main():
                         answer = pair[0]
                         found_LOCATION = True
                 if not found_LOCATION:
-                    #TODO: deal with this situation
-                    pass
+                    max_similar_parse = parser.parse(max_similar_sent)
+                    for mparse in max_similar_parse:
+                        print mparse
+                        stack = mparse
+                        answer = max_similar_sent
+                        record1 = []
+                        record2 = []
+                        for i in stack:
+                            searchLabel(i, "PP", record1)
+                            # print "-------", record1
+                        if len(record1) == 1:
+                            if record1[0][0][0] in ("in", "from", "at", "on", "under"):
+                                answer = record1[0].leaves()     
+                        else:
+                            for j in record1:
+                                searchLabel(j, "CD", record2)
+                            if len(record2) == 1:
+                                answer = record2[0].leaves()
 
 
                 
-            #For what, which, and how, and others: how long, how many, how can, how much, which state
-        	elif question_start == 'what':
-        		max_similar_parse = parser.parse(max_similar_sent)
-    			for mparse in parser_result: 
-        		    if mparse[0][0].label() == 'NP'：
-        		    	answer = mparse[0][0]
+            #For what, which, and how, and others: how long, how many, how can, how many, how much
+            elif question_start == 'what':
+                max_similar_parse = parser.parse(max_similar_sent)
+                for mparse in parser_result: 
+                    if mparse[0][0].label() == 'NP':
+                        answer = mparse[0][0]
 
-        	elif question_start == 'which':
-        		# TODO
-        		pass
+            elif question_start == 'which':
+                # TODO
+                pass
 
-        	elif question_start == 'how':
-        		# TODO
-        		pass	
+            elif question_start == 'how':
+                # TODO
+                pass    
 
             else:
                 #print(count,question)
@@ -384,7 +415,13 @@ def main():
 
 
             #Capitalize first letter
-            answer = " ".join(answer).title()
+            if not answer:
+                answer = "NULL"
+            else:
+                answer = " ".join(answer)
+                a = list(answer)
+                a[0] = a[0].upper()
+                answer = "".join(a)
 
             print(answer)
             # > answer.txt
