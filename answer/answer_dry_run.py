@@ -172,11 +172,11 @@ def main():
 			question_start = question_tokenized_lower[0]
 
 			
-			# Control the type of question 
-			if question_start in ['when','where']:
-				pass
-			else:
-				continue 
+			# # Control the type of question 
+			# if question_start in ['when','where']:
+			# 	pass
+			# else:
+			# 	continue 
 			
 			#	Seperate question words and question content
 			#  filtered_list = [a for a in string.punctuation]
@@ -236,181 +236,183 @@ def main():
 			# print(max_similar_sent)
 			#	Build answer based on different type of question
 			answer = "NULL"
-
-			#	Yes/No question: answer should contain only yes or no.	
-			
-			if question_start in ["is","was","are","were","do","does","did","have","has","had", "wasn't","isn't","aren't"]:
-				#	First, convert sentence into a declarative sentence
-				if max_similarity_2 == 0:
-					answer = "No"
-				else:
-					question_parse = parser.parse(question_tokenized)
-					for parse in question_parse:
-						# print(parse)
-						verb = parse[0][0].leaves()
-						sub = (parse[0][1].leaves())
-						obj = (parse[0][2].leaves())
-						#substring = " ".join((sub+verb+obj))
-						# If yes, most of the words in objects should be in the original sentence
-						obj = [a.lower() for a in obj]
-						if float(len(intersection(obj,max_similar_sent))) / len(obj)  >= 0.8:
-							answer = "Yes"
-						else:
-							answer = "No"
+			try:
+				#	Yes/No question: answer should contain only yes or no.	
+				if question_start in ["is","was","are","were","do","does","did","have","has","had", "wasn't","isn't","aren't"]:
+					#	First, convert sentence into a declarative sentence
+					if max_similarity_2 == 0:
+						answer = "No"
+					else:
+						question_parse = parser.parse(question_tokenized)
+						for parse in question_parse:
+							# print(parse)
+							verb = parse[0][0].leaves()
+							sub = (parse[0][1].leaves())
+							obj = (parse[0][2].leaves())
+							#substring = " ".join((sub+verb+obj))
+							# If yes, most of the words in objects should be in the original sentence
+							obj = [a.lower() for a in obj]
+							if float(len(intersection(obj,max_similar_sent))) / len(obj)  >= 0.8:
+								answer = "Yes"
+							else:
+								answer = "No"
+							
+						#	TODO: parse candidate sentence
+						# answer = "No"
+						# similar_sent_parse = parser.parse(max_similar_sent)
+						# for parse in similar_sent_parse:
+						# 	verb_ = parse[0][0].leaves()
+						# 	sub_ = (parse[0][2].leaves())
+						# 	obj_ = (parse[0][1].leaves())
 						
-					#	TODO: parse candidate sentence
-					# answer = "No"
-					# similar_sent_parse = parser.parse(max_similar_sent)
-					# for parse in similar_sent_parse:
-					# 	verb_ = parse[0][0].leaves()
-					# 	sub_ = (parse[0][2].leaves())
-					# 	obj_ = (parse[0][1].leaves())
-					
-			elif question_start == 'why':
-				max_similar_sent_str = " ".join(max_similar_sent)
-				reason_idx = max_similar_sent_str.index('because of')
-				answer = max_similar_sent_str[len('because of'):len(max_similar_sent_str)]
-				if reason_idx == -1:
-					reason_idx = max_similar_sent_str.index('because')
-					answer = max_similar_sent_str[len('because'):len(max_similar_sent_str)]
-				if reason_idx == -1:
-					reason_idx = max_similar_sent_str.index('for')
-					answer = max_similar_sent_str[len('for'):len(max_similar_sent_str)]
-				if reason_idx == -1:
-					answer = "NULL"
+				elif question_start == 'why':
+					max_similar_sent_str = " ".join(max_similar_sent)
+					reason_idx = max_similar_sent_str.index('because of')
+					answer = max_similar_sent_str[len('because of'):len(max_similar_sent_str)]
+					if reason_idx == -1:
+						reason_idx = max_similar_sent_str.index('because')
+						answer = max_similar_sent_str[len('because'):len(max_similar_sent_str)]
+					if reason_idx == -1:
+						reason_idx = max_similar_sent_str.index('for')
+						answer = max_similar_sent_str[len('for'):len(max_similar_sent_str)]
+					if reason_idx == -1:
+						answer = "NULL"
 
 
-			elif question_start == 'when':
-				# 1. Tag: 'DATE', 'TIME'
-				# 2.1. one PP or one CD in PP, return it
-				# 2.2. multi candidate, return max_similar_sent
-				found_DATE = False
-				max_similar_sent_tag = ner.tag(max_similar_sent)
-				print max_similar_sent_tag 
-				# Uncomment for dry run
-				for pair in max_similar_sent_tag:
-					if pair[1] == 'DATE' or pair[1] == 'TIME':
-						answer = pair[0]
-						found_DATE = True
-				if not found_DATE:
-					#TODO: deal with this situation
-					max_similar_parse = parser.parse(max_similar_sent)
-					for mparse in max_similar_parse:
-						#print mparse
-						stack = mparse
-						answer = max_similar_parse
-						record1 = []                            
-						record2 = []
-						for i in stack:
-							searchLabel(i, "PP", record1)
-							# print "-------", record1
-						if len(record1) == 1:
-							answer = record1[0].leaves()     
-						else:
-							for j in record1:
-								searchLabel(j, "CD", record2)
-							if len(record2) == 1:
-								answer = record2[0].leaves()
-			
-			elif question_start == 'who':
-				max_similar_sent_tag = ner.tag(max_similar_sent)
-				found_PERSON = False
-				for pair in max_similar_sent_tag:
-					if pair[1] == 'PERSON':
-						answer = pair[0]
-						found_PERSON = True
-				if not found_PERSON:
-					#TODO: deal with this situation
-					pass
-
-			elif question_start == 'where':
-				found_LOCATION = False
-				max_similar_sent_tag = ner.tag(max_similar_sent)
-				for pair in max_similar_sent_tag:
-					if pair[1] == 'LOCATION' or pair[1] == 'LOCATION':
-						answer = pair[0]
-						found_LOCATION = True
-				if not found_LOCATION:
-					max_similar_parse = parser.parse(max_similar_sent)
-					for mparse in max_similar_parse:
-						#print mparse
-						stack = mparse
-						answer = max_similar_sent
-						record1 = []
-						record2 = []
-						for i in stack:
-							searchLabel(i, "PP", record1)
-							# print "-------", record1
-						if len(record1) == 1:
-							if record1[0][0][0] in ("in", "from", "at", "on", "under"):
+				elif question_start == 'when':
+					# 1. Tag: 'DATE', 'TIME'
+					# 2.1. one PP or one CD in PP, return it
+					# 2.2. multi candidate, return max_similar_sent
+					found_DATE = False
+					max_similar_sent_tag = ner.tag(max_similar_sent)
+					# print max_similar_sent_tag 
+					# Uncomment for dry run
+					for pair in max_similar_sent_tag:
+						if pair[1] == 'DATE' or pair[1] == 'TIME':
+							answer = pair[0]
+							found_DATE = True
+					if not found_DATE:
+						#TODO: deal with this situation
+						max_similar_parse = parser.parse(max_similar_sent)
+						for mparse in max_similar_parse:
+							#print mparse
+							stack = mparse
+							answer = max_similar_parse
+							record1 = []                            
+							record2 = []
+							for i in stack:
+								searchLabel(i, "PP", record1)
+								# print "-------", record1
+							if len(record1) == 1:
 								answer = record1[0].leaves()     
-						else:
-							for j in record1:
-								searchLabel(j, "CD", record2)
-							if len(record2) == 1:
-								answer = record2[0].leaves()
+							else:
+								for j in record1:
+									searchLabel(j, "CD", record2)
+								if len(record2) == 1:
+									answer = record2[0].leaves()
 
-			elif question_start == 'how':
-				question_second = question_tokenized_lower[1]
-				temp = ['old', 'long', 'many', 'much', 'tall', 'heavy']
-				max_similar_sent_str = " ".join(max_similar_sent)
-				if question_second not in temp:
-				  answer = max_similar_sent_str
+				elif question_start == 'who':
+					max_similar_sent_tag = ner.tag(max_similar_sent)
+					found_PERSON = False
+					for pair in max_similar_sent_tag:
+						if pair[1] == 'PERSON':
+							answer = pair[0]
+							found_PERSON = True
+					if not found_PERSON:
+						#TODO: deal with this situation
+						pass
+
+				elif question_start == 'where':
+					found_LOCATION = False
+					max_similar_sent_tag = ner.tag(max_similar_sent)
+					for pair in max_similar_sent_tag:
+						if pair[1] == 'LOCATION' or pair[1] == 'LOCATION':
+							answer = pair[0]
+							found_LOCATION = True
+					if not found_LOCATION:
+						max_similar_parse = parser.parse(max_similar_sent)
+						for mparse in max_similar_parse:
+							#print mparse
+							stack = mparse
+							answer = max_similar_sent
+							record1 = []
+							record2 = []
+							for i in stack:
+								searchLabel(i, "PP", record1)
+								# print "-------", record1
+							if len(record1) == 1:
+								if record1[0][0][0] in ("in", "from", "at", "on", "under"):
+									answer = record1[0].leaves()     
+							else:
+								for j in record1:
+									searchLabel(j, "CD", record2)
+								if len(record2) == 1:
+									answer = record2[0].leaves()
+
+				elif question_start == 'how':
+					question_second = question_tokenized_lower[1]
+					temp = ['old', 'long', 'many', 'much', 'tall', 'heavy']
+					max_similar_sent_str = " ".join(max_similar_sent)
+					if question_second not in temp:
+					  answer = max_similar_sent_str
+					else:
+					  number = [int(s) for s in max_similar_sent_str.split() if s.isdigit()]
+					  tagged = pos_tag(max_similar_sent)
+					  token_candidates = []
+					  for token, label in tagged:
+						splited = token.split('-')
+						if len(splited) > 1:
+						  for t in splited:
+							if t.isdigit():
+							  token_candidates.append(t)
+						if label == 'CD':
+						  token_candidates.append(token)
+					  if len(token_candidates) > 1:
+						answer = max_similar_sent_str
+					  elif len(token_candidates) == 1:
+						answer = token_candidates[0] 
+					  else:
+						answer = "NULL" 
+					
+				#For what, which,and others
 				else:
-				  number = [int(s) for s in max_similar_sent_str.split() if s.isdigit()]
-				  tagged = pos_tag(max_similar_sent)
-				  token_candidates = []
-				  for token, label in tagged:
-					splited = token.split('-')
-					if len(splited) > 1:
-					  for t in splited:
-						if t.isdigit():
-						  token_candidates.append(t)
-					if label == 'CD':
-					  token_candidates.append(token)
-				  if len(token_candidates) > 1:
-					answer = max_similar_sent_str
-				  elif len(token_candidates) == 1:
-					answer = token_candidates[0] 
-				  else:
-					answer = "NULL" 
-				
-			#For what, which,and others
-			else:
-				#print(count,question)
-				try:
-					question_parse = parser.parse(question_tokenized)
-					for parse in question_parse:
-						#print(parse)
-						verb = parse[0][1].leaves()
-						sub = (parse[0][1][1].leaves())
-						#obj = (parse[0][2].leaves())
-						#print(verb,sub)
+					#print(count,question)
+					try:
+						question_parse = parser.parse(question_tokenized)
+						for parse in question_parse:
+							#print(parse)
+							verb = parse[0][1].leaves()
+							sub = (parse[0][1][1].leaves())
+							#obj = (parse[0][2].leaves())
+							#print(verb,sub)
 
-					similar_sent_parse = parser.parse(max_similar_sent)
-					for parse in similar_sent_parse:
-						# print(parse)
-						answer = parse[0][1][1].leaves()				
-				except:
-					pass
-					#TODO: deal with this situation
+						similar_sent_parse = parser.parse(max_similar_sent)
+						for parse in similar_sent_parse:
+							# print(parse)
+							answer = parse[0][1][1].leaves()				
+					except:
+						pass
+						#TODO: deal with this situation
 
 
-			#Capitalize first letter
+				#Capitalize first letter
 
-			if not answer:
-				answer = "NULL"
-			elif question_start == 'how':
-				answer = answer.capitalize()
-			else:
-				answer = " ".join(answer)
-				a = list(answer)
-				a[0] = a[0].upper()
-				answer = "".join(a)
+				if not answer:
+					answer = "NULL"
+				elif question_start == 'how':
+					answer = answer.capitalize()
+				else:
+					answer = " ".join(answer)
 
-			print(answer)
+					a = list(answer)
+					if a:
+						a[0] = a[0].upper()
+						answer = "".join(a)
+				print(' '.join(question_tokenized))
+				print(answer)
+			except:
+				print(" ".join(max_similar_sent))
 
-			
 		
 
 if __name__ == '__main__':
