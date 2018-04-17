@@ -24,6 +24,7 @@ from ansWhere import ansWhere
 from ansWhen import ansWhen
 from ansHow import ansHow
 from ansYesNo import ansYesNo
+from ansYesNo import intersection
 
 
 lemmatizer = WordNetLemmatizer()
@@ -54,12 +55,25 @@ parser=StanfordParser(model_path=eng_model_path, path_to_models_jar=my_path_to_m
 stopWords = stopwords.words('english')
 
 
+def pre_processing(sentences):
+	# print "Original:", question
+	symbols = {" 's" : "'s", " ," : ",", "`` ":  "''", " ''": "''", " :" : ":", "  ": " ", "$ ": "$", "/ ":"/"}
+	sentences = sentences.replace("-lrb- ", "(").replace(" -rrb-", ")").replace("-LRB- ", "(").replace(" -RRB-",")")
+
+	for key in symbols:		
+		if key in sentences:
+			sentences = sentences.replace(key, symbols[key])				
+	# print "Processed:", question
+	return sentences
+
+
 # Tokenize all sentences
 def tokenize_sent(article_file):
 
 	sentence_pool = []
 
 	article = open(article_file).read()
+	article = pre_processing(article)
 	paragraphs = [p for p in article.split('\n') if p]
 	for paragraph in paragraphs[1:len(paragraphs)]: # Skip the title
 
@@ -86,21 +100,13 @@ def tokenize_sent(article_file):
 				sentences.append(sentence)
 			else:
 				try:
-				# print "======="
-				# print "1:", sentences[-1]
 					sentences[-1] = sentences[-1] + sentence
-				# print "2:", sentences[-1]
-				# print "======="
 				except:
 					sentences.append(sentence)
 
 
 		for sentence in sentences:
 			
-			# if sentence[-1] != "." and sentence[-1] != ":" and sentence[-1] != "--":
-			#   continue
-
-			# Filter by * : no if with * and too long. 
 			sentence = sentence.replace("*", "").lstrip()
 			sentence_tokenized = [a.lower() for a in word_tokenize(sentence)]
 			words = [w for w in sentence_tokenized if w not in string.punctuation]
@@ -111,113 +117,6 @@ def tokenize_sent(article_file):
 			# print ' '.join(sentence_tokenized)
 			sentence_pool.append(sentence_tokenized)  
 	return sentence_pool
-
-
-
-# Calculate the jaccard distance between two strings
-# a and b should be a list of tokens in the string
-def jaccard_similarity(a,b):
-	a = set(a)
-	b = set(b)
-	c = a.intersection(b)
-	return float(len(c)) / (len(a) + len(b) - len(c))
-
-
-# A Jaccard based similarity measure
-def similarity(sent,question_content, percentage):
-	#score = len(set(sent).intersection(set(question_content)))
-	a = set(sent)
-	b = set(question_content)
-	c = a.intersection(b)
-	score = float(len(c)) / (len(a) + len(b) - len(c))
-	# The sentence needs to contain all words in the question content, if not, return 0
-	#print(sent)
-	for q_word in question_content:
-		#fuzzy matching
-		found = False
-		for s_word in sent:
-			percentage_similarity = SequenceMatcher(None, q_word, s_word).ratio()
-			if percentage_similarity >= percentage:
-				found = True
-		if not found:
-			score -= 1
-			#print(q_word)
-	#print
-	return  score 
-
-
-# Customized similarity measure for why type of question
-def similarity_why(sent,question_content):
-	a = set(sent)
-	b = set(question_content)
-	c = a.intersection(b)
-	score = float(len(c)) / (len(a) + len(b) - len(c))
-	
-	found = False
-	for q_word in ['because','for','since']:
-		if q_word not in sent:
-			pass
-		else:
-			found = True
-	if not found:
-		score = 0
-		
-	return  score 
-
-# Intersection between two lists
-def intersection(lst1, lst2):
-		lst3 = [value for value in lst1 if value in lst2]
-		return lst3
-
-
-# ====== Jaccard Based Similarity ======
-def most_similar(sentences_pool, question_tokenized_lower, question_start):
-
-		filtered_list = ['?','when', 'what','where','what','why','which','who','how','do','does','did','a','the','an']
-		question_content = [a for a in question_tokenized_lower if a not in filtered_list]  
-
-		# Find the most similar sentences in the pool 
-		max_similarity = None
-		most_similar_sent = [] #  We need to consider ties
-
-		for sent_idx in range(len(sentences_pool)):
-			sent = sentences_pool[sent_idx]
-			
-			#similarity_score = jaccard_similarity(sent,question_content)+similarity(sent,question_content)
-			if question_start == 'why':
-				similarity_score = similarity_why(sent,question_content)
-			else:
-				similarity_score = similarity(sent,question_content, 0.8)
-			
-			if max_similarity == None:
-				max_similarity = similarity_score
-				# Append the origin un-lemmatized sentence
-				most_similar_sent.append(sentences_pool[sent_idx])
-			elif similarity_score > max_similarity:
-				max_similarity = similarity_score
-				most_similar_sent.append(sentences_pool[sent_idx])
-			else:
-				pass
-
-		# Now, build the answer from the retrieved sentence
-		same_word = set(most_similar_sent[0])
-		for s in most_similar_sent[1:]:
-			same_word.intersection_update(s)
-
-		# Find the most relevant sentence
-		max_similarity_2 = None
-		max_similar_sent = None
-
-		for sent in most_similar_sent:
-			sent_filtered = [a for a in sent if not a in same_word]
-			similarity_socre_2 = similarity(sent_filtered,question_content, 1)
-			if max_similarity_2 == None:
-				max_similarity_2 = similarity_socre_2
-				max_similar_sent = sent
-			elif similarity_socre_2 > max_similarity_2:
-				max_similarity_2 = similarity_socre_2
-				max_similar_sent = sent
-		return max_similar_sent, max_similarity_2
 
 
 # ====== Cosine Similarity  ======
@@ -243,12 +142,6 @@ def cosineSim(sentences_pool, question, question_start):
 
 	return word_tokenize(corpus[related_docs_indices]), cosine_similarities[related_docs_indices]
 
-
- 
-
-
-# TO DO: 
-# Questions like: was volta buried where he died or was he buried someplace else
 
 def main():
 
