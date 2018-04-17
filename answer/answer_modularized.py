@@ -222,13 +222,18 @@ def most_similar(sentences_pool, question_tokenized_lower, question_start):
 
 # ====== Cosine Similarity  ======
 
-def cosineSim(sentences_pool, question):
+def cosineSim(sentences_pool, question, question_start):
 
 	corpus = [' '.join(question)]
 
-	for s in sentences_pool:
-		corpus.append(' '.join(s))
-
+	if question_start == 'why':
+		for s in sentences_pool:
+			for q_word in ['because', 'since', 'so', 'goal']:
+				if q_word in s:
+					corpus.append(' '.join(s))
+	else:
+		for s in sentences_pool:
+			corpus.append(' '.join(s))
 
 	vec = TfidfVectorizer().fit_transform(corpus)
 	
@@ -237,6 +242,7 @@ def cosineSim(sentences_pool, question):
 	related_docs_indices = cosine_similarities.argsort()[:-5:-1][1]
 
 	return word_tokenize(corpus[related_docs_indices]), cosine_similarities[related_docs_indices]
+
 
  
 
