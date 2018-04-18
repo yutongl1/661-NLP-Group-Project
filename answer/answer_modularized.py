@@ -117,7 +117,27 @@ def tokenize_sent(article_file):
 			# print ' '.join(sentence_tokenized)
 			sentence_pool.append(sentence_tokenized)  
 	return sentence_pool
-
+	
+# cur: currect tree
+# label: target label
+# record: candidates
+def searchLabel(cur, label, record):
+	answer = None
+	if cur.label() == label:
+		# record.append(cur.leaves())
+		record.append(cur)
+	for i in cur:
+		# print "--",    (i), isinstance(i, (str, unicode)), i
+		if not isinstance(i, (str, unicode)) and i.label() == label:
+			# record.append(i.leaves())
+			record.append(i)
+		else:
+			if len(i):
+				if isinstance(i[0], (str, unicode)):
+					continue
+				else:
+					for j in i:
+						searchLabel(j, label, record)
 
 # ====== Cosine Similarity  ======
 
