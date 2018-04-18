@@ -165,7 +165,7 @@ def main():
 			question_start = question_tokenized_lower[0]
 
 			# max_similar_sent1, max_similarity1  = most_similar(sentences_pool, question_tokenized_lower, question_start)  
-			max_similar_sent , max_similarity = cosineSim(sentences_pool, question_tokenized_lower)  
+			max_similar_sent , max_similarity = cosineSim(sentences_pool, question_tokenized_lower, question_start)  
 
 
 			# print "----------"
