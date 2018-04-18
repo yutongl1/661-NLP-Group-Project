@@ -158,8 +158,10 @@ def main():
 	
 	with open(question_list) as f:
 	# For each question on the list
-
+		count = 0
 		for question in f:
+			question = pre_processing(question)
+
 			question_tokenized = word_tokenize(question)
 			question_tokenized_lower = [a.lower() for a in question_tokenized]
 			question_start = question_tokenized_lower[0]
@@ -171,7 +173,6 @@ def main():
 			# print "----------"
 			# print "Question:", question      
 			# print "Selected Jaccar:", ' '.join(max_similar_sent1), max_similarity1
-			# print " "
 			# print "Selected Cosine:", ' '.join(max_similar_sent), max_similarity
 
 
