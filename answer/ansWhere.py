@@ -58,8 +58,7 @@ def searchLabel(cur, label, record):
 	for i in cur:
 		# print "--",    (i), isinstance(i, (str, unicode)), i
 		if not isinstance(i, (str, unicode)) and i.label() == label:
-			# record.append(i.leaves())
-			record.append(i)
+			searchLabel(i, label, record)
 		else:
 			if len(i):
 				if isinstance(i[0], (str, unicode)):
@@ -69,36 +68,50 @@ def searchLabel(cur, label, record):
 						searchLabel(j, label, record)
 
 def ansWhere(max_similar_sent):
-	# 1. Tag: 'DATE', 'TIME'
-	found_LOCATION = False
 	max_similar_sent_tag = ner.tag(max_similar_sent)
-	for pair in max_similar_sent_tag:
-		if pair[1] == 'LOCATION' or pair[1] == 'LOCATION':
-			answer = pair[0]
-			found_LOCATION = True
-	if not found_LOCATION:
-		max_similar_parse = parser.parse(max_similar_sent)
-		for mparse in max_similar_parse:
-			#print mparse
-			stack = mparse
-			answer = max_similar_sent
-			record1 = []
-			record2 = []
-			for i in stack:
-				searchLabel(i, "PP", record1)
-				# print "-------", record1
-			if len(record1) == 1:
-				if record1[0][0][0] in ("in", "from", "at", "on", "under"):
-					answer = record1[0].leaves()     
+	max_similar_parse = parser.parse(max_similar_sent)
+
+	for mparse in max_similar_parse:
+		#@
+		print mparse
+
+		stack = mparse
+		answer = max_similar_parse
+		record1 = []                            
+		record2 = []
+		for i in stack:
+			searchLabel(i, "SBAR", record1)
+			if len(record1) == 1 and "where" in record1[0].leaves():
+				answer = record1[0].leaves()     
 			else:
-				for j in record1:
-					searchLabel(j, "CD", record2)
+				searchLabel(i, "PP", record1)
+				recordLocation = []
+				# print len(record1)
+				for j in range(len(record1)):
+					try:
+						# print(record1[-j-1])
+						j_s = " ".join((" ".join(record1[-j-1].leaves())).split("-")).title()
+						j_tag = ner.tag(word_tokenize(j_s))
+						for pair in j_tag:
+							# print pair[0], pair[1]
+							if pair[1] == 'LOCATION':
+								print pair[0], recordLocation
+								# print("Date", pair[0])
+								if pair[0] not in recordLocation:
+									recordLocation.append(pair[0])
+									print pair[0]
+									record2.append(record1[-j-1])
+									break
+					except:
+						pass
 				if len(record2) == 1:
-							answer = record2[0].leaves()
+					answer = record2[0].leaves()
+				else:
+					answer = max_similar_sent
+
 	answer = " ".join(answer)
 	a = list(answer)
 	if a:
 		a[0] = a[0].upper()
 	answer = "".join(a)
-	print answer
 	return answer
