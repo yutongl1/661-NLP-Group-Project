@@ -177,29 +177,45 @@ def main():
 
 			# Input lists of tokens for question and max_similar_sentence. 
 			# Output a list of tokens
-			if question_start in yes_no_words:
-				answer = ansYesNo(question_tokenized_lower, max_similar_sent, max_similarity)
-				# print answer
+			# if question_start in yes_no_words:
+			# 	answer = ansYesNo(question_tokenized_lower, max_similar_sent, max_similarity)
+			# 	# print answer
 				# print "--------"
-			
+
+
+
+			#@ For test
+			sent_ = " ".join(max_similar_sent)
+			sent_ = list(sent_)
+			if sent_:
+				sent_[0] = sent_[0].upper()
+			sent_ = "".join(sent_)
+
 			if question_start == "when":
 				answer = ansWhen(max_similar_sent)
+				print(question)
+				print(sent_)
+				print(answer)
+				print("=========")
+				
+			# if question_start == "where":
+			# 	answer = ansWhere(max_similar_sent)
+			# 	print(question)
+			# 	print(max_similar_sent)
+			# 	print(answer)
+
 				
 
-			if question_start == "where":
-				answer = ansWhere(max_similar_sent)
+			# if question_start == "how":
+			# 	answer = ansHow(question_tokenized_lower, max_similar_sent)
 				
 
-			if question_start == "how":
-				answer = ansHow(question_tokenized_lower, max_similar_sent)
-				
-
-			if question_start == "what":
-				answer = ansWhat(parser, question_tokenized_lower, max_similar_sent)
+			# if question_start == "what":
+			# 	answer = ansWhat(parser, question_tokenized_lower, max_similar_sent)
 				
 				
-			print(question)
-			print(answer)
+			# print(question)
+			# print(answer)
 		
 
 if __name__ == '__main__':

@@ -1,0 +1,25 @@
+Potential improvement
+
+
+1. Sentence tokenization
+	Do not split on ":","---" etc. Sometimes the answer is embedded in a long sentence. For instance, "There are four types of kangaroo: ... "
+
+2. Reference resolution
+	E.g. they, your, her etc.
+
+3. Yes/No questions needs improvement. Right now, everything is based on the fuzzy matching between questions and candidate sentences. Need to parse the sentences to get scemantic meaning. 
+
+4. Wh- question: redefine sentence similarity by taking account of question type first. For instance, for Why-type of quesiton, look at sentence that contains because, since, for, because of etc. Similarity measure for why has been implemented already, but it needs improvement. 
+
+5. Need to consider the situation where the actual answer is in the clause. 
+
+6. Need to improve the "Who" question. The answer may not be a PERSON (returned by stanford tagger)
+
+7. Need to improve the "When" question. The answer may not be a Location (returned by stanford tagger)
+
+8. Need to deal with 'which' and 'how'
+
+9. Need to improve 'what' question that do not have a NP VP answer. For instance: 
+	- what is used to do ... 
+
+10. Deal with try except
