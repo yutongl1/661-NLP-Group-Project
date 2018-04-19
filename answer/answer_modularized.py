@@ -202,10 +202,10 @@ def cosineSim(sentences_pool, question, question_start, title):
 		lemmatize_question = [w.replace("-","") for w in corpus[0].split() if w not in stop_words and w not in string.punctuation]
 		lemmatize_question = [lemmatizer.lemmatize(w,tag_dict[t[0].lower()]) if t[0].lower() in ['j','n', 'v'] else lemmatizer.lemmatize(w) for w,t in st_pos.tag(lemmatize_question)]			
 		
-		print "Lemma Ques:", lemmatize_question
+		# print "Lemma Ques:", lemmatize_question
 		for idx in related_docs_indices[1:]:
-			print "----"
-			print "sent", corpus[idx]
+			# print "----"
+			# print "sent", corpus[idx]
 			lemmatize_sentence = [w.replace("-","") for w in corpus[idx].split() if w not in stop_words and w != "'s"]
 			# Augment Year 
 			augment_year = []
@@ -230,8 +230,8 @@ def cosineSim(sentences_pool, question, question_start, title):
 				max_sentence_idx = idx
 				max_overlap = score
 
-			print "Lemma Sent:", lemmatize_sentence
-			print "intersection: ", intersection(lemmatize_question,lemmatize_sentence), score
+			# print "Lemma Sent:", lemmatize_sentence
+			# print "intersection: ", intersection(lemmatize_question,lemmatize_sentence), score
 		selected_sentence =  max_sentence 
 		selected_sentence_idx = max_sentence_idx
 		
