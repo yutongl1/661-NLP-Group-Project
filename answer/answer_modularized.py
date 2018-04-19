@@ -147,7 +147,7 @@ def cosineSim(sentences_pool, question, question_start, title):
 
 	for s in sentences_pool:
 		corpus.append(s)	
-		
+
 	# Calculate cosine similarity 
 	vec = TfidfVectorizer().fit_transform(corpus)
 	
@@ -245,10 +245,6 @@ def cosineSim(sentences_pool, question, question_start, title):
 
 
 
-
- 
-
-
 # TO DO: 
 # Questions like: was volta buried where he died or was he buried someplace else
 
@@ -275,14 +271,12 @@ def main():
 			question_tokenized_lower = [a.lower() for a in question_tokenized]
 			question_start = question_tokenized_lower[0]
 
-			# max_similar_sent1, max_similarity1  = most_similar(sentences_pool, question_tokenized_lower, question_start)  
 			max_paragraph, max_similar_sent, max_similarity = cosineSim(sentences_pool, question_tokenized_lower, question_start, title)  
 
 
-			print "----------"
-			print "Question:", question      
-			# print "Selected Jaccar:", ' '.join(max_similar_sent1), max_similarity1
-			print "Selected Cosine:", ' '.join(max_similar_sent), max_similarity
+			# print "----------"
+			# print "Question:", question      			
+			# print "Selected Cosine:", ' '.join(max_similar_sent), max_similarity
 
 			# print "======== paragraphs ========"
 			# s = ''
@@ -292,12 +286,30 @@ def main():
 
 			# print "======== paragraphs ========"
 
+
 			# Input lists of tokens for question and max_similar_sentence. 
 			# Output a list of tokens
-			# if question_start in yes_no_words:
-			# 	answer = ansYesNo(question_tokenized_lower, max_similar_sent, max_similarity)
-			# 	# print answer
-				# print "--------"
+
+			if question_start in yes_no_words:
+				count += 1
+				answer = ansYesNo(question_tokenized_lower, max_similar_sent, max_similarity, title)
+				# print "Question %d:" %count, question.strip()
+				# print "Answer:", ' '.join(answer)
+				# print "Sentences:", ' '.join(max_similar_sent)
+				# print "================================="						
+			if question_start == "why": 
+				count += 1
+				try:
+					prev_sent = max_paragraph[max_paragraph.index(max_similar_sent) - 1]
+				except:
+					prev_sent = None
+
+				answer = ansWhy(question_tokenized_lower, max_similar_sent, prev_sent)
+
+				# print "Question %d:" %count, question.strip()
+				# print "Answer:", ' '.join(answer)
+				# print "Sentences:", ' '.join(max_similar_sent)
+				# print "================================="				
 
 
 
