@@ -57,69 +57,126 @@ def intersection(lst1, lst2):
 		return lst3
 
 
-def ansYesNo(question, max_similar_sent, max_similarity):
+def ansYesNo(question, max_similar_sent, max_similarity, title):
 	# Yes/No question: answer should contain only yes or no.  
 
+	if question[-1] == "?":
+		question = question[:-1]
 	question_pos = st_pos.tag(question)
 	max_similar_pos = st_pos.tag(max_similar_sent)
 
 	question_parse = parser.parse(question)
 	for parse in question_parse:
 		verb = parse[0][0].leaves()
-		sub = parse[0][1].leaves()
+		sub = None 
+		obj = None
 		try:
+			sub = parse[0][1].leaves()
 			obj = parse[0][2].leaves()
 			obj = [w for w in question if w not in verb and w not in sub]
 		except: 
 			obj = sub 
 
-		
+		if not obj:
+			obj = sub
+			if not obj:
+				obj = question
+
 	# Remove stopwords and punctuations
 	obj = [w for w in obj if not w in stop_words and not w in string.punctuation]
 	selected = [w for w in max_similar_sent if not w in stop_words]
 
+	if len(obj) <= 2 and len(intersection(obj,selected)) > 0: 
+		obj = [w for w in question[1:] if not w in stop_words and not w in string.punctuation]
+
+
 
 	# Lemmatize
-	obj = [lemmatizer.lemmatize(w,t[0].lower()) if t[0].lower() in ['a','n','v'] else lemmatizer.lemmatize(w) for w,t in question_pos if w in obj]
-	selected = [lemmatizer.lemmatize(w,t[0].lower()) if t[0].lower() in ['a','n','v'] else lemmatizer.lemmatize(w) for w,t in max_similar_pos if w in selected]
+	tag_dict = {"j":"a", "n":"n", "v": "v"}
+	obj = [lemmatizer.lemmatize(w,tag_dict[t[0].lower()]) if t[0].lower() in ['a','n','v'] else lemmatizer.lemmatize(w) for w,t in question_pos if w in obj]
+	selected = [lemmatizer.lemmatize(w,tag_dict[t[0].lower()]) if t[0].lower() in ['a','n','v'] else lemmatizer.lemmatize(w) for w,t in max_similar_pos if w in selected]
 	# Calculate how many overlapped words is in the question. 
 	intersect = intersection(obj,selected)
-	recall =  float(len(intersect)) / len(obj)
 
+	obj_score = 0 
+	intersect_score = 0
+	for obj_item in obj:
+		if obj_item in title: 
+			obj_score += 0.2
+		else:
+			obj_score += 1
+	for intersect_item in intersect:
+		if intersect_item in title:
+			intersect_score += 0.2
+		else:
+			intersect_score += 1
 
+	recall =  float(intersect_score) / obj_score
 
-	print "--------"
-	print "Intersect:", intersect
-	print "In question:", obj
-	print "In Sentence", selected
-	print "Recall:", recall
-	print "--------"
-	# print "Score Cosine:", max_similarity
+	# print "--------"
+	# print 'obj', obj
+	# print "Intersect:", intersect
 	# print "Score Recall:", recall
-	if recall  > 0.6:
+	# print "--------"
+
+	if recall >= 0.5 and 'or' in question: 
+			answer = ' '.join(max_similar_sent)		
+
+	elif recall  > 0.6:
+
 		answer = "Yes"
+		negation = False
+		in_question = 0
+		in_sentence = 0
+
+
 		for neg_words in negation_words:
-			if neg_words not in intersect and neg_words in question:
+			if neg_words in question:
+				in_question += 1
+			if neg_words in max_similar_sent:
+				in_sentence += 1
+			if abs(in_question - in_sentence) % 2 != 0:
+				negation = True
+
+		for neg_words in negation_words:
+			if neg_words in question and negation:
 				try:
 					after_not, tag = question_pos[question.index(neg_words) + 1]
 				except:
 					continue
 
-				if tag[0].lower() in ['a','n','v']:
-					after_not = lemmatizer.lemmatize(after_not,tag[0].lower())
+				if tag[0].lower() in ['j','n','v']:
+					after_not = lemmatizer.lemmatize(after_not,tag_dict[tag[0].lower()])
 				if after_not in intersect:
 					answer = "No"
 
-			if neg_words not in intersect and neg_words in max_similar_sent:
+			if neg_words in max_similar_sent and negation:
 				try:
 					after_not, tag = max_similar_pos[max_similar_sent.index(neg_words) + 1]
 				except:
 					continue
 
-				if tag[0].lower() in ['a','n','v']:
-					after_not = lemmatizer.lemmatize(after_not,tag[0].lower())
+				if tag[0].lower() in ['j','n','v']:
+					after_not = lemmatizer.lemmatize(after_not,tag_dict[tag[0].lower()])
 				if after_not in intersect:
-					answer = "No"			
+					answer = "No"		
+
+
+		for qw in question:
+			if qw.isdigit():
+				number_match = False
+				almost_match = False
+				for w in max_similar_sent:
+					if qw == w:
+						number_match = True
+						continue
+					elif w.isdigit() and len(w) == len(qw):
+						almost_match = True
+				if not number_match and almost_match:
+					if negation:
+						answer = "Yes"
+					else: 
+						answer = "No"
 	else:
 		answer = "No"
 
