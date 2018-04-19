@@ -4,6 +4,7 @@ import nltk
 from nltk import word_tokenize, sent_tokenize,pos_tag
 import os
 import sys
+import re
 from nltk.parse import stanford
 from nltk.parse.stanford import StanfordParser
 from nltk.parse.stanford import StanfordDependencyParser
@@ -26,6 +27,7 @@ from ansHow import ansHow
 from ansYesNo import ansYesNo
 from ansWhy import ansWhy
 from ansYesNo import intersection
+
 
 
 lemmatizer = WordNetLemmatizer()
@@ -66,7 +68,7 @@ def intersection(lst1, lst2):
 
 def pre_processing(sentences):
 	# print "Original:", question
-	symbols = {" 's" : "'s", " ," : ",", "`` ":  "''", " ''": "''", " :" : ":", "  ": " ", "$ ": "$", "/ ":"/", " %": "%"}
+	symbols = {" 's" : "'s", "``":  "''", "$ ": "$", "/ ":"/", " %": "%"}
 	sentences = sentences.replace("-lrb- ", "(").replace(" -rrb-", ")").replace("-LRB- ", "(").replace(" -RRB-",")")
 
 	for key in symbols:		
@@ -79,11 +81,12 @@ def pre_processing(sentences):
 # Tokenize all sentences
 def tokenize_sent(article_file):
 
-	sentence_pool = []
+	sentence_pool = dict()
 
 	article = open(article_file).read()
 	article = pre_processing(article)
 	paragraphs = [p for p in article.split('\n') if p]
+	title = word_tokenize(paragraphs[0].lower())
 	for paragraph in paragraphs[1:len(paragraphs)]: # Skip the title
 
 		sentences_rough = sent_tokenize(paragraph.decode('utf-8'))
@@ -113,19 +116,24 @@ def tokenize_sent(article_file):
 				except:
 					sentences.append(sentence)
 
-
+		p = []
 		for sentence in sentences:
 			
 			sentence = sentence.replace("*", "").lstrip()
 			sentence_tokenized = [a.lower() for a in word_tokenize(sentence)]
-			words = [w for w in sentence_tokenized if w not in string.punctuation]
-			if len(words) <= 4 or (len(words) < 10 and len(sentences) <= 1) or "." not in sentence:
+			p.append(sentence_tokenized)
+
+		for sentence_tokenized in p:
+
+			words = [w for w in sentence_tokenized if re.search('[a-zA-Z1-9]', w)]
+
+			if len(words) <= 4 or (len(words) < 10 and len(sentences) <= 1): #or "." not in sentence:
 				continue
 
 			# print "------"
 			# print ' '.join(sentence_tokenized)
-			sentence_pool.append(sentence_tokenized)  
-	return sentence_pool
+			sentence_pool[' '.join(sentence_tokenized) ] = p
+	return title, sentence_pool
 
 
 # ====== Cosine Similarity  ======
@@ -134,28 +142,28 @@ def tokenize_sent(article_file):
 
 
 
-def cosineSim(sentences_pool, question, question_start):
+def cosineSim(sentences_pool, question, question_start, title):
+	# print 'title', title
 
 	corpus = [' '.join(question)]
 
 
 	for s in sentences_pool:
-		corpus.append(' '.join(s))	
-	
+		corpus.append(s)	
+
 
 	vec = TfidfVectorizer().fit_transform(corpus)
 	
 	question_vec = vec[0:1]
 	cosine_similarities = linear_kernel(question_vec, vec).flatten()
-	related_docs_indices = cosine_similarities.argsort()[:-5:-1]
+	related_docs_indices = cosine_similarities.argsort()[:-9:-1]
 	# related_docs_indices = cosine_similarities.argsort()[:-5:-1]
-
 
 	if question_start == 'how':
 		if question[1] in ['old', 'long', 'many', 'much', 'tall', 'heavy']:
 			new_related_indices = [0]
-			for idx in cosine_similarities.argsort()[-7:-1]:
-				tags = set([t for w, t in st_pos.tag(corpus[idx].split())])
+			for idx in related_docs_indices[1:]:
+				tags = set([t for w, t in st_pos.tag(corpus[idx].split()) if re.search('[a-zA-Z1-9]', w)])
 				if "CD" in tags:
 					new_related_indices.append(idx)
 			
@@ -169,51 +177,61 @@ def cosineSim(sentences_pool, question, question_start):
 
 		for (i, s) in enumerate(corpus):
 			for q_word in ['because', 'since', 'so', 'goal', "why", 'reason']:
-				if q_word in s and i not in new_related_indices:
+				if q_word in word_tokenize(s) and i not in new_related_indices:
 					new_related_indices.append(i)
 					
 		if len(new_related_indices) > 1:
 			related_docs_indices = new_related_indices
 
 
-
+	# for idx in related_docs_indices:
+	# 	print "++++ "
+	# 	print "sent:", corpus[idx], cosine_similarities[idx]
 	confidence = cosine_similarities[related_docs_indices[1]]
+	diff_confidence = None
 
-
-	if confidence < 0.25:
-
-		corpus_lemmatize = []
-
-		# for idx in related_docs_indices:
-		# 	# print 'SSSS:', corpus[idx]
-		# 	lemmatize_sentence = [w for w in corpus[idx].split() if w not in stop_words]
-		# 	lemmatize_sentence = [lemmatizer.lemmatize(w,t[0].lower()) if t[0].lower() in ['a','n', 'v'] else lemmatizer.lemmatize(w) for w,t in st_pos.tag(lemmatize_sentence)]
-		# 	corpus_lemmatize.append(' '.join(lemmatize_sentence))
-
-		
-
-		# vec_lemma= TfidfVectorizer().fit_transform(corpus_lemmatize)
-
-		# question_vec_lemma = vec_lemma[0:1]
-		# cosine_similarities_lemma = linear_kernel(question_vec_lemma, vec_lemma).flatten()
-		# selected_idx = cosine_similarities_lemma.argsort()[:-5:-1][1]
-
-		# return word_tokenize(corpus[related_docs_indices[selected_idx]]), cosine_similarities_lemma[selected_idx]
+	if len(related_docs_indices) > 2:
+		diff_confidence = cosine_similarities[related_docs_indices[1]] - cosine_similarities[related_docs_indices[2]]
+	if confidence < 0.25 or (confidence < 0.55 and diff_confidence and diff_confidence < 0.1):
 
 		max_sentence = None
 		max_overlap = None
 		max_sentence_idx = None
 
-		lemmatize_question = [w for w in corpus[0].split() if w not in stop_words]
-		lemmatize_question = [lemmatizer.lemmatize(w,t[0].lower()) if t[0].lower() in ['a','n', 'v'] else lemmatizer.lemmatize(w) for w,t in st_pos.tag(lemmatize_question)]			
+		tag_dict = {"j":"a", "n":"n", "v": "v"}
+		lemmatize_question = [w.replace("-","") for w in corpus[0].split() if w not in stop_words and w not in string.punctuation]
+		lemmatize_question = [lemmatizer.lemmatize(w,tag_dict[t[0].lower()]) if t[0].lower() in ['j','n', 'v'] else lemmatizer.lemmatize(w) for w,t in st_pos.tag(lemmatize_question)]			
+		
+		print "Lemma Ques:", lemmatize_question
 		for idx in related_docs_indices[1:]:
-			lemmatize_sentence = [w for w in corpus[idx].split() if w not in stop_words]
-			lemmatize_sentence = [lemmatizer.lemmatize(w,t[0].lower()) if t[0].lower() in ['a','n', 'v'] else lemmatizer.lemmatize(w) for w,t in st_pos.tag(lemmatize_sentence)]			
-			if not max_overlap or len(intersection(lemmatize_question,lemmatize_sentence)) > max_overlap:
+			print "----"
+			print "sent", corpus[idx]
+			lemmatize_sentence = [w.replace("-","") for w in corpus[idx].split() if w not in stop_words and w != "'s"]
+			# Augment Year 
+			augment_year = []
+			for w in lemmatize_sentence:
+				if w.isdigit() and len(w) == 4:
+					augment_year.append(w[:-1] + '0')
+					augment_year.append(w[:-1] + '0s')
+					augment_year.append(w[:-2] + '00')
+					augment_year.append(w[:-2] + '00s')
+			lemmatize_sentence += augment_year
+			lemmatize_sentence = [lemmatizer.lemmatize(w,tag_dict[t[0].lower()]) if t[0].lower() in ['j','n', 'v'] else lemmatizer.lemmatize(w) for w,t in st_pos.tag(lemmatize_sentence)]			
+
+			score = 0
+			for item in intersection(lemmatize_question,lemmatize_sentence):
+				if item not in title:
+					score += 1
+				else:
+					score += 0.9
+
+			if not max_overlap or score > max_overlap:
 				max_sentence = corpus[idx]
 				max_sentence_idx = idx
-				max_overlap = len(intersection(lemmatize_question,lemmatize_sentence))
+				max_overlap = score
 
+			print "Lemma Sent:", lemmatize_sentence
+			print "intersection: ", intersection(lemmatize_question,lemmatize_sentence), score
 		selected_sentence =  max_sentence 
 		selected_sentence_idx = max_sentence_idx
 		
@@ -222,14 +240,17 @@ def cosineSim(sentences_pool, question, question_start):
 		selected_sentence = corpus[related_docs_indices[1]]
 		selected_sentence_idx = related_docs_indices[1]
 
-	if selected_sentence.startswith("this") and selected_sentence_idx > 0:
-		selected_sentence_idx -= 1
-		selected_sentence = corpus[selected_sentence_idx]
 
-	return word_tokenize(selected_sentence), cosine_similarities[selected_sentence_idx]
+	return sentences_pool[selected_sentence], word_tokenize(selected_sentence), cosine_similarities[selected_sentence_idx]
 
 
 
+
+ 
+
+
+# TO DO: 
+# Questions like: was volta buried where he died or was he buried someplace else
 
 def main():
 
@@ -238,7 +259,7 @@ def main():
 	question_list = sys.argv[2]
 
 	# Tokenize all sentences
-	sentences_pool = tokenize_sent(article_file)
+	title, sentences_pool = tokenize_sent(article_file)
 
 	yes_no_words = ["is","was","are","were","do","does","did","have","has","had"]
 	yes_no_words += map(lambda w : w + "n't", yes_no_words)      
@@ -255,7 +276,7 @@ def main():
 			question_start = question_tokenized_lower[0]
 
 			# max_similar_sent1, max_similarity1  = most_similar(sentences_pool, question_tokenized_lower, question_start)  
-			max_similar_sent, max_similarity = cosineSim(sentences_pool, question_tokenized_lower, question_start)    
+			max_paragraph, max_similar_sent, max_similarity = cosineSim(sentences_pool, question_tokenized_lower, question_start, title)  
 
 
 			# print "----------"
