@@ -3,14 +3,16 @@ wordnet_lemmatizer = WordNetLemmatizer()
 from nltk.corpus import stopwords
 
 stop_words = set(stopwords.words('english'))
+
 def jaccard_similarity(a,b):
   a = set(a)
   b = set(b)
   c = a.intersection(b)
   return float(len(c)) / (len(a) + len(b) - len(c))
 
+# (A & B / B)
 def percent_diff(listA, listB):
-  return len(set(listA)&set(listB)) / float(len(set(listA) | set(listB)))
+  return len(set(listA)&set(listB)) / float(len(set(listB)))
 
 #Return true if it can be considered as a candidate answer
 # def check_answer_subject_diff(answer, subject_list):
@@ -24,8 +26,8 @@ def percent_diff(listA, listB):
 def check_answer_question_diff(answer, sq):
   answer = [a for a in answer if a not in stop_words]
   sq = [a for a in sq.leaves() if a not in stop_words]
-  print(answer, sq, jaccard_similarity(answer, sq), 'candidate')
-  if jaccard_similarity(answer, sq) >= 0.2:
+  print(answer, sq, percent_diff(sq,answer), 'candidate')
+  if percent_diff(sq, answer) >= 0.3:
     return False
 
   return True
@@ -71,9 +73,7 @@ def ansWhat(parser, question_tokenized_lower, max_similar_sent):
         #Find the subject being asked
         subject_list = []
         searchLabel(parse_q[0][1],"NP",subject_list)
-
         #subject_list = [a.leaves() for a in subject_list]
-        print("subject", subject_list)
 
         for n in range(len(parse_q[0][1])):
           if parse_q[0][1][n].label().startswith("VB"):
@@ -90,17 +90,16 @@ def ansWhat(parser, question_tokenized_lower, max_similar_sent):
               print("answer parse")
               print(parse_a)
 
-
               for i in range(len(parse_a[0])):
                 
                 #Check if the answer is at the beginning of the sentence
-                if parse_a[0][i].label().startswith("NP") and subject_list != [] and first_NP == False:
+                #Only do this check if the sentence is not too complicated (for instance, sentences without too many ",")
+                
+                if parse_a[0][i].label().startswith("NP") and subject_list != [] and first_NP == False and max_similar_sent.count(",") < 4:
                   first_NP = True
                   #answer_candidate = check_answer_subject_diff(parse_a[0][i].leaves(), subject_list)
                   answer_candidate = check_answer_question_diff(parse_a[0][i].leaves(), parse_q[0][1])
                   if answer_candidate:
-                    # print("next label", parse_a[0][i+1].label())
-                    
                     #Check if the next node is a matching "VP"
                     try:
                       if parse_a[0][i+1].label() == "VP":
@@ -117,25 +116,30 @@ def ansWhat(parser, question_tokenized_lower, max_similar_sent):
 
                 #The answer is not in the beginning of the sentence, check the rest of the sentence to find matching answer
                 if (parse_a[0][i].label().startswith("VP")):
-                  print("Not in the beginning")
+                  
+                  
                   #Handle the case where the selected sentence is of the structure VP NP
                   for k in range(len(parse_a[0][i])):
-
                     if (parse_a[0][i][k].label().startswith("N")):
-                      answer = parse_a[0][i][k].leaves()
-                      #if not check_answer_subject_diff(answer, subject_list):
-                      if not check_answer_question_diff(answer, parse_q[0][1]):
-                        continue
+                      if "," in parse_a[0][i][k].leaves():
+                        possible_np = []
+                        answer_list = []
+                        searchLabel(parse_a[0][i][k], 'NP',possible_np)
+                        for answer in possible_np:
+                          answer = answer.leaves()
+                          #if not check_answer_subject_diff(answer, subject_list):
+                          if not check_answer_question_diff(answer, parse_q[0][1]):
+                            continue
+                          else:
+                            answer_list.extend(answer)
+                            print("answer_ list: ",answer_list)
+                            answer = answer_list
 
-                    
-                      # for j in range(len(parse_a[0][i][k])):
-                      #   if parse_a[0][i][k][j].label() == "NP":
-                      #     try:
-                      #       if parse_a[0][i][k][j+1].label() == "," and parse_a[0][i][k][j+2].label() == "NP":
-                      #         answer = parse_a[0][i][k][j+2].leaves()
-                              
-                      #     except:
-                      #       pass
+                      else:
+                        answer = parse_a[0][i][k].leaves()
+
+                      
+                      print("Not in the beginning, returned from VP NP")
                       return answer
                     
 
@@ -143,63 +147,31 @@ def ansWhat(parser, question_tokenized_lower, max_similar_sent):
                   for k in range(len(parse_a[0][i])):
                     if (parse_a[0][i][k].label().startswith("PP")):
                       answer = parse_a[0][i][k].leaves()
+                      print("returned from VP PP")
                       return answer
                   
-                  #Handle the case where the selected sentence is of the structure V + complex sentences
-                  for k in range(len(parse_a[0][i])):
-                    #VP + complex structure
-                    if (parse_a[0][i][k].label().startswith("VP")):
-                      #Check if this is the right VP by checking the VB
-                      for l in range(len(parse_a[0][i][k])):
-                        if parse_a[0][i][k][l].label().startswith("VB"):
-                          answer_v = " ".join(parse_a[0][i][k][l].leaves())
-                          if answer_v == "'s":
-                            answer_v = 'is'
-                          elif answer_v == "'re":
-                            answer_v = 'are'
-                          answer_v = wordnet_lemmatizer.lemmatize(answer_v, pos='v')
-                          
-                          print(answer_v,question_v)
-                          
 
-                          #What be type of question
-                          if answer_v == question_v and answer_v =="be":
-                            #Found corrected VP
-                            #First case, simple VB + VP (contains some NP/N)
-                            N = []
-                            searchLabel(parse_a[0][i][k],"NP", N)
-                            if len(N) > 0:
-                              answer = N[0].leaves()
-                              return answer
-                          elif answer_v == question_v and answer_v == 'do':
-                            pass
-                            #TODO: What do type of question
-                          
-                          else:
-                            pass
+                  print("complicated case")
+                  S = []
+                  searchLabel(parse_a[0][i][k], "S", S)
+                  if len(S)>=1:
+                    answer_tree = S[0]
+                    #Remove potential conjunction from the S
+                    if len(S[0]) > 1:
+                      answer_tree = S[0][0]
 
-                      #Second case, complex sentence
-                      print("complicated case")
-                      S = []
-                      searchLabel(parse_a[0][i][k], "S", S)
-                      if len(S)>=1:
-                        answer_tree = S[0]
-                        #Remove potential conjunction from the S
-                        if len(S[0]) > 1:
-                          answer_tree = S[0][0]
-
-                        #Get the NP from the S
-                        np = []
-                        searchLabel(answer_tree, "NP", np)
-                        answer = np[0].leaves()
+                    #Get the S from the S
+                    s = []
+                    searchLabel(answer_tree,"S",s)
+                    if len(s) > 0:
+                      answer = s[0].leaves()
                       return answer
                     
-                    #VB + complex structure
-                    elif (parse_a[0][i][k].label().startswith("VB")):
-                      N = []
-                      searchLabel(parse_a[0][i],"NP", N)
-                      if len(N) > 0:
-                        answer = N[0].leaves()
+                    #Or, Get the NP from the S
+                    np = []
+                    searchLabel(answer_tree, "NP", np)
+                    if len(np) > 0:
+                      answer = np[0].leaves()
                       return answer
                  
 
@@ -207,17 +179,10 @@ def ansWhat(parser, question_tokenized_lower, max_similar_sent):
                   #
                   #
 
-                     
-                      
-                      
-                      
-
-
-                 
 
       
     except Exception,e:
       print str(e)
 
   
-  return " ".join(answer)
+  return answer
