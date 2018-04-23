@@ -26,6 +26,7 @@ from ansWhen import ansWhen
 from ansHow import ansHow
 from ansYesNo import ansYesNo
 from ansWhy import ansWhy
+from ansWho import ansWho
 from ansYesNo import intersection
 
 
@@ -244,10 +245,6 @@ def cosineSim(sentences_pool, question, question_start, title):
 	return sentences_pool[selected_sentence], word_tokenize(selected_sentence), cosine_similarities[selected_sentence_idx]
 
 
-
-# TO DO: 
-# Questions like: was volta buried where he died or was he buried someplace else
-
 def main():
 
 	# Read in the article and list of questions
@@ -270,33 +267,17 @@ def main():
 			question_tokenized = word_tokenize(question)
 			question_tokenized_lower = [a.lower() for a in question_tokenized]
 			question_start = question_tokenized_lower[0]
+			question_second = question_tokenized_lower[1]
 
 			max_paragraph, max_similar_sent, max_similarity = cosineSim(sentences_pool, question_tokenized_lower, question_start, title)  
 
-
-			# print "----------"
-			# print "Question:", question      			
-			# print "Selected Cosine:", ' '.join(max_similar_sent), max_similarity
-
-			# print "======== paragraphs ========"
-			# s = ''
-			# for s_l in max_paragraph: 
-			# 	s += ' '.join(s_l)
-			# print s
-
-			# print "======== paragraphs ========"
-
-
 			# Input lists of tokens for question and max_similar_sentence. 
 			# Output a list of tokens
-
+			answer = max_similar_sent
 			if question_start in yes_no_words:
 				count += 1
 				answer = ansYesNo(question_tokenized_lower, max_similar_sent, max_similarity, title)
-				# print "Question %d:" %count, question.strip()
-				# print "Answer:", ' '.join(answer)
-				# print "Sentences:", ' '.join(max_similar_sent)
-				# print "================================="						
+					
 			if question_start == "why": 
 				count += 1
 				try:
@@ -304,47 +285,25 @@ def main():
 				except:
 					prev_sent = None
 
-				answer = ansWhy(question_tokenized_lower, max_similar_sent, prev_sent)
+				answer = ansWhy(question_tokenized_lower, max_similar_sent, prev_sent)		
 
-				# print "Question %d:" %count, question.strip()
-				# print "Answer:", ' '.join(answer)
-				# print "Sentences:", ' '.join(max_similar_sent)
-				# print "================================="				
-
-
-
-			#@ For test
-			sent_ = " ".join(max_similar_sent)
-			sent_ = list(sent_)
-			if sent_:
-				sent_[0] = sent_[0].upper()
-			sent_ = "".join(sent_)
-
-			if question_start == "when":
+			if question_start == "when" or (question_start == 'since' and question_second == "when"):
 				answer = ansWhen(max_similar_sent)
-				print(question)
-				print(sent_)
-				print(answer)
-				print("=========")
 				
-			# if question_start == "where":
-			# 	answer = ansWhere(max_similar_sent)
-			# 	print(question)
-			# 	print(max_similar_sent)
-			# 	print(answer)
+			if question_start == "where":
+				answer = ansWhere(max_similar_sent)
 
-				
+			if question_start == "how":
+				answer = ansHow(question_tokenized_lower, max_similar_sent)			
 
-			# if question_start == "how":
-			# 	answer = ansHow(question_tokenized_lower, max_similar_sent)
-				
+			if question_start == "what":
+				answer = ansWhat(parser, question_tokenized_lower, max_similar_sent)
 
-			# if question_start == "what":
-			# 	answer = ansWhat(parser, question_tokenized_lower, max_similar_sent)
-				
-				
-			# print(question)
-			# print(answer)
+			if question_start == "who":
+				answer = ansWho(stanford_parser_dir, stanford_ner, question_tokenized_lower, max_similar_sent, max_paragraph)
+
+			print(question)
+			print(answer)
 		
 
 if __name__ == '__main__':
