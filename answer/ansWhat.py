@@ -173,16 +173,8 @@ def ansWhat(parser, question_tokenized_lower, max_similar_sent):
                     if len(np) > 0:
                       answer = np[0].leaves()
                       return answer
-                 
-
-                  #TODO: handle "respectively" type of questions
-                  #
-                  #
-
-
       
     except Exception,e:
       print str(e)
-
   
   return answer

@@ -27,7 +27,7 @@ def percent_diff(listA, listB):
 def check_answer_question_diff(answer, sq):
   answer = [a for a in answer if a not in stop_words]
   sq = [a for a in sq.leaves() if a not in stop_words]
-  print(answer, sq, percent_diff(sq,answer), 'candidate')
+  # print(answer, sq, percent_diff(sq,answer), 'candidate')
   if percent_diff(sq, answer) >= 0.3:
     return False
 
@@ -65,8 +65,8 @@ def ansWho(parser,tagger, question_tokenized_lower, max_similar_sent, max_paragr
  
 
   for parse_q in question_parse:
-    print("question parse")
-    print(parse_q)
+    # print("question parse")
+    # print(parse_q)
     try:
       # See if there's PERSON in the max_sim_sentences
       max_similar_sent_upper = [a.title() for a in max_similar_sent]
@@ -87,7 +87,7 @@ def ansWho(parser,tagger, question_tokenized_lower, max_similar_sent, max_paragr
         print "coref"
         for sent in max_paragraph:
           before_ner = tagger.tag([a.title() for a in sent]) 
-          print("before: ",before_ner)
+          # print("before: ",before_ner)
           for pair in before_ner:
             answer_list = []
             if pair[1] == 'PERSON' and pair[0].lower():

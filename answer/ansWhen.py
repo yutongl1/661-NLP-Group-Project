@@ -93,8 +93,6 @@ def ansWhen(max_similar_sent):
 		#TODO: deal with this situation
 		max_similar_parse = parser.parse(max_similar_sent)
 		for mparse in max_similar_parse:
-			#@
-			print mparse
 
 			stack = mparse
 			answer = max_similar_parse
@@ -114,7 +112,7 @@ def ansWhen(max_similar_sent):
 							j_s = " ".join((" ".join(record1[-j-1].leaves())).split("-"))
 							j_tag = ner.tag(word_tokenize(j_s))
 							for pair in j_tag:
-								print pair[0]
+								# print pair[0]
 								if pair[1] == 'DATE' or pair[1] == 'TIME':
 									# print("Date", pair[0])
 									if pair[0] not in recordDate:
@@ -127,12 +125,5 @@ def ansWhen(max_similar_sent):
 						answer = record2[0].leaves()
 					else:
 						answer = max_similar_sent
-
-	#@
-	answer = " ".join(answer)
-	a = list(answer)
-	if a:
-		a[0] = a[0].upper()
-	answer = "".join(a)
 	return answer
 

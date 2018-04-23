@@ -72,9 +72,6 @@ def ansWhere(max_similar_sent):
 	max_similar_parse = parser.parse(max_similar_sent)
 
 	for mparse in max_similar_parse:
-		#@
-		print mparse
-
 		stack = mparse
 		answer = max_similar_parse
 		record1 = []                            
@@ -95,11 +92,11 @@ def ansWhere(max_similar_sent):
 						for pair in j_tag:
 							# print pair[0], pair[1]
 							if pair[1] == 'LOCATION':
-								print pair[0], recordLocation
+								# print pair[0], recordLocation
 								# print("Date", pair[0])
 								if pair[0] not in recordLocation:
 									recordLocation.append(pair[0])
-									print pair[0]
+									# print pair[0]
 									record2.append(record1[-j-1])
 									break
 					except:
@@ -108,10 +105,4 @@ def ansWhere(max_similar_sent):
 					answer = record2[0].leaves()
 				else:
 					answer = max_similar_sent
-
-	answer = " ".join(answer)
-	a = list(answer)
-	if a:
-		a[0] = a[0].upper()
-	answer = "".join(a)
 	return answer

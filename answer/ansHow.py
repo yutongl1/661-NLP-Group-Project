@@ -56,7 +56,7 @@ def ansHow(question_tokenized_lower, max_similar_sent):
 				answer = token_candidates[0]  
 		else:
 			answer = max_similar_sent_str
-	#answer = word_tokenize(answer)
+	answer = word_tokenize(answer)
 	return answer
 					
 
