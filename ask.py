@@ -64,19 +64,6 @@ lmtzr = WordNetLemmatizer()
 	# 4) TO DO: Manual Evaluation
 
 
-
-# ------------------------------------------
-# Problem to solve
-# 1. NER Tag is not really good at recognizing PERSON. For example, Dempsey in set1/a1.txt is replaced by "what" all the time
-#	 Possible solution: a list of common names from U.S. Census data.
-# 4. Why question
-# 5. When replacing synonyms and antonyms, have not yet considered the case "XX and YY". 
-# 6. Pronouns in sentences (e.g.  What scored his first and the eventual match-winning goal for Tottenham in a 3-2 win over Manchester United?) 
-#    Possible solution: co-reference resolution
-
-
-# -----------------------------------------
-
 # Return [[w01,...,wn1],[w02,...,wn2],...]
 def sentenceCandidate(file):
 	with open(file) as f:
@@ -176,33 +163,67 @@ def parse_sentence(sentence):
 
 				if VB.leaves()[0] in be:
 					# Capitalize the BE word + The first NP Phrase (Subject) + Everything after the Be word. 
-					yesno_question = VB.leaves()[0].capitalize() + ' ' + subject + ' ' +  ' '.join(S[0][1][1].leaves()) + '?'
+					yes_no_verb = VB.leaves()[0].capitalize()
+					yes_no_sub = subject
+					yes_no_rest = ' '.join(S[0][1][1].leaves()) + '?'
+
+					
 					# print question
+
 				else:
 					# Do 
 					if VB.label() == "VBP":
-						yesno_question = "Do " + subject + ' ' +  lmtzr.lemmatize(VB.leaves()[0],'v') + ' ' + ' '.join(S[0][1][1].leaves()) + '?'						
+						yes_no_verb = "Do"
+						yes_no_sub = subject
+						yes_no_rest = lmtzr.lemmatize(VB.leaves()[0],'v') + ' ' + ' '.join(S[0][1][1].leaves()) + '?'										
+
+
 					# Does
 					elif VB.label() == "VBZ":
-						yesno_question = "Does " + subject + ' ' + lmtzr.lemmatize(VB.leaves()[0],'v') + ' ' + ' '.join(S[0][1][1].leaves()) + '?'
+						yes_no_verb = "Does"
+						yes_no_sub = subject
+						yes_no_rest = lmtzr.lemmatize(VB.leaves()[0],'v') + ' ' + ' '.join(S[0][1][1].leaves()) + '?'	
 					# Did
 					elif VB.label() == "VBD":
-						yesno_question = "Did " + subject + ' ' + lmtzr.lemmatize(VB.leaves()[0],'v') + ' ' + ' '.join(S[0][1][1].leaves()) + '?'
+						yes_no_verb = "Did"
+						yes_no_sub = subject
+						yes_no_rest = lmtzr.lemmatize(VB.leaves()[0],'v') + ' ' + ' '.join(S[0][1][1].leaves()) + '?'							
 					# print question
 
+				
+				yesno_question = yes_no_verb + ' ' + subject + ' ' +  yes_no_rest
 				generated_question.append(yesno_question)
 
 				replace_synonyms = expand_synonyms(yesno_question)
 				if replace_synonyms:
 					generated_question.append(replace_synonyms)
 
-
 				# For yes-no questions, can replace adjectives with antonyms
 				replace_antonyms = expand_antonyms(yesno_question)
 				if replace_antonyms:
-					generated_question.append(replace_antonyms)				
+					generated_question.append(replace_antonyms)					
 
 
+				yesno_negate_question = None
+				rand_int = random.randint(1, 10)
+				if rand_int > 5: 
+					yesno_negate_question = yes_no_verb + ' ' + subject + ' not ' +  yes_no_rest
+					# print "======= Negate ========"
+					# print yesno_negate_question
+					generated_question.append(yesno_negate_question)
+
+					replace_synonyms_neg = expand_synonyms(yesno_negate_question)
+					if replace_synonyms_neg:
+						# print "======= Negate replace_synonyms_neg========"
+						# print replace_synonyms_neg						
+						generated_question.append(replace_synonyms_neg)
+
+					replace_antonyms_neg = expand_antonyms(yesno_negate_question)
+					if replace_antonyms_neg:
+						# print "======= Negate replace_antonyms_neg========"
+						# print replace_antonyms_neg								
+						generated_question.append(replace_antonyms_neg)	
+					
 
             # Where and When
 			words = S[0].leaves()
@@ -400,7 +421,7 @@ def expand_antonyms(sentence):
 
 
 def filterQuestions(question_list):
-	# print "============== Filtering ============"
+	print "============== Filtering ============"
 	i = 0
 	questions_priority1 = []
 	questions_priority2 = []
@@ -429,7 +450,7 @@ def main():
 	sentence_word = sentenceCandidate(sys.argv[1])
 	nquestion = int(sys.argv[2])
 	generated_questions = []
-	
+	print "====== Generating Questions =========="
 	# Loop through all tokenized sentence, generate questions if possible 
 	# Add to candidate set generated_questions
 	for sent in sentence_word:
@@ -437,11 +458,14 @@ def main():
 			questions_from_sent = parse_sentence(sent)
 			if questions_from_sent != []:
 				generated_questions += questions_from_sent
-				if len(generated_questions) > 100:
+				print "Generated %d questions before filtering, Still Generating" % len(generated_questions)
+				if len(generated_questions) > 110:
 					break
 		except Exception as e:
-			print "ERROR in parsing:", e
+			# print "ERROR in parsing:", e
 			pass
+
+	print "====== Finish Generating Questions =========="
 
 	try:
 
@@ -449,20 +473,27 @@ def main():
 		questions_priority1 = set(questions_priority1)
 		questions_priority2 = set(questions_priority2)
 
+		# print " ======== Generated %d good questions and %d not so good questions =======" % (len(questions_priority1), len(questions_priority1))
+		print "========= Sampling %d questions =====" % nquestion
+		
+		# If ginger filter out too many questions, we sample some from the excluded ones. 
+		if len(questions_priority1) < nquestion:
+			if len(questions_priority2) < len(questions_priority1):
+				sampled_question = list(questions_priority1) + list(questions_priority2)
+			else:
+				sampled_question = list(questions_priority1) + random.sample(questions_priority2, nquestion - len(questions_priority1))
+		else:
+			sampled_question = random.sample(questions_priority1, nquestion)
+
 	except Exception as e2:
 		print "Error in Filtering:", e
-		pass
+		if len(generated_question) < nquestion: 
+			sampled_question = generated_questions
+		else: 
+			sampled_question = random.sample(generated_questions, nquestion)
 	
 
-	print " ======== Generated %d good questions and %d not so good questions =======" % (len(questions_priority1), len(questions_priority1))
-	print "========= Sampling %d questions" % nquestion
-	
-	# If ginger filter out too many questions, we sample some from the excluded ones. 
-	if len(questions_priority1) < nquestion:
-		sampled_question = list(questions_priority1) + random.sample(questions_priority2, nquestion - len(questions_priority1))
-	else:
-		sampled_question = random.sample(questions_priority1, nquestion)
-
+	print "======= Here are the generated questions ======="	
 	for (i, q) in enumerate(list(sampled_question)):
 		print "Question %d" %i, q
 
